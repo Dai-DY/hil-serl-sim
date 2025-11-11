@@ -295,9 +295,9 @@ class PandaPickCubeGymEnv(MujocoGymEnv):
             dt = time.time() - start_time
             if self.intervened == True:
                 time.sleep(max(0, (1.0 / self.hz) - dt))
-            # time.sleep(max(0, (1.0 / self.hz) - dt))
-            # cv2.imshow('Concatenated Image', np.hstack((obs["images"]["wrist_1"], obs["images"]["wrist_2"])))
-            # cv2.waitKey(1)
+            time.sleep(max(0, (1.0 / self.hz) - dt))
+            cv2.imshow('Concatenated Image', np.hstack((obs["images"]["wrist_1"], obs["images"]["wrist_2"])))
+            cv2.waitKey(1)
 
 
         success = self._compute_success()
