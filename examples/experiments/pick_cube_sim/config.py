@@ -154,10 +154,12 @@ class KeyBoardIntervention2(gym.ActionWrapper):
         self.left, self.right = False, False
         self.action_indices = action_indices
 
+        ## action want to preserve[0,1,2] the x y z move but not gripper
+
         self.gripper_state = 'close'
         self.intervened = False
-        self.action_length = 0.3
-        self.current_action = np.array([0, 0, 0, 0, 0, 0])  # 分别对应 W, A, S, D 的状态
+        self.action_length = 0.1
+        self.current_action = np.array([0, 0, 0, 0, 0, 0])
         self.flag = False
         self.key_states = {
             'w': False,
@@ -248,7 +250,16 @@ class KeyBoardIntervention2(gym.ActionWrapper):
             filtered_expert_a[self.action_indices] = expert_a[self.action_indices]
             expert_a = filtered_expert_a
         if self.intervened:
-            return expert_a, True
+            merged_action = action.copy()
+            for i in range(min(3, expert_a.shape[0])):
+                if not np.isclose(expert_a[i], 0.0):
+                    merged_action[i] = expert_a[i]
+
+            ## preserve the gripper action from expert
+            if self.gripper_enabled and expert_a.shape[-1] == merged_action.shape[-1]:
+                merged_action[-1] = expert_a[-1]
+
+            return merged_action, True
         else:
             return action, False
 
@@ -265,4 +276,5 @@ class KeyBoardIntervention2(gym.ActionWrapper):
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
         self.gripper_state = 'open'
+        self.intervened = False
         return obs, info
